@@ -1,36 +1,55 @@
-import React,{useState} from 'react';
-import AddForm from './components/AddForm';
-import TodoLists from './components/TodoLists';
-import {TodosModel} from './interface';
+import React,{ useState} from 'react';
+import Footer from './components/Footer';
+import SearchField from './components/SearchField';
+import SearchData from './components/SearchData';
+import {NewModel} from './components/Interface';
+
+const options = {
+	method: 'GET',
+	headers: {
+		'X-RapidAPI-Key': 'f3cb2bb4bdmsh6c1d749be359eafp1ea1ecjsn3c4d9e48fa16',
+		'X-RapidAPI-Host': 'real-time-web-search.p.rapidapi.com'
+	}
+};
+
+
 
 const App:React.FC = () => {
+  const [darkTheme,setDarkTheme] = useState<boolean>(true);
+  const [search,setSearch] = useState<string>('');
+  const [searchKeyword,setSearchKeyword] = useState<string>('');
+  const [data,setData] = useState<NewModel[]>([]);
 
-  const [todo,setTodo] = useState<string>('');
-  const [todos,setTodos] = useState<TodosModel[]>([]);
-
-  const addTodo=(e: React.FormEvent)=>{
-    e.preventDefault()
-    if(todo){
-      setTodos([...todos,{id:Date.now(),todo:todo,complete:false}])
-    };
-    setTodo('')
+  const searchData=async(searchText:string)=>{
+  fetch(`https://real-time-web-search.p.rapidapi.com/search?q=${searchText}&limit=25`, options)
+	.then(response => response.json())
+	.then(response => setData(response.data))
+	.catch(err => setData(err));
   }
 
-  return (
-    <div className='w-screen min-h-screen'>
+  const handleSearch =(e:React.FormEvent)=>{
+    e.preventDefault();
 
-      <div className='flex flex-col justify-center items-center'>
-      <h1 className='text-lg capitalize my-3 text-center font-semibold'>Tyscript ToDo App</h1>
-      <AddForm setTodo={setTodo} todo={todo} addTodo={addTodo} />
+    if(search) searchData(search)
+
+  }
+
+    return (
+      <div className={darkTheme ? 'dark':''}>
+      <div className='max-w-screen min-h-screen overflow-x-hidden dark:bg-[#100F0F]'>
+      <SearchField 
+      searchKeyword={searchKeyword} setSearchKeyword={setSearchKeyword}
+      search={search} setSearch={setSearch}
+      darkTheme={darkTheme} setDarkTheme={setDarkTheme}
+      handleSearch={handleSearch}
+       />
+
+      <SearchData data={data} />
+
+      <Footer />
+      </div>  
       </div>
-
-      <div className='mt-5 flex flex-col justify-center items-center gap-3'>
-
-        <TodoLists todos={todos} setTodos={setTodos} />
-
-          </div>
-      </div>
-  )
+    )
 }
 
 export default App
